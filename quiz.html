@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizVault – Exam</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0d0d0d;
+      --paper: #f5f0e8;
+      --gold: #c9a84c;
+      --gold-light: #e8d5a3;
+      --rust: #b85c38;
+      --cream: #faf7f0;
+      --green: #3a7d44;
+      --shadow: rgba(13,13,13,0.12);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--ink);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; color: var(--gold); font-size: 18px;
+    }
+
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--gold);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink); font-size: 12px; font-weight: 800;
+    }
+
+    .student-info {
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .student-badge {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 6px 14px;
+      color: #ccc; font-size: 13px;
+    }
+
+    .student-badge strong { color: white; }
+
+    /* TIMER */
+    .timer-wrap {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(201,168,76,0.15);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 8px;
+      padding: 6px 16px;
+    }
+
+    .timer-icon { font-size: 16px; }
+
+    #timer {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--gold); letter-spacing: 1px;
+      min-width: 56px;
+    }
+
+    #timer.warning { color: var(--rust); animation: pulse 1s infinite; }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* PROGRESS */
+    .progress-bar-wrap {
+      background: white;
+      padding: 16px 40px;
+      border-bottom: 1px solid rgba(13,13,13,0.08);
+      display: flex; align-items: center; gap: 20px;
+    }
+
+    .progress-label {
+      font-size: 13px; color: #888; white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .progress-track {
+      flex: 1; height: 6px;
+      background: rgba(13,13,13,0.08);
+      border-radius: 100px; overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--rust));
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+
+    .q-counter {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 13px;
+      color: var(--ink);
+    }
+
+    /* MAIN */
+    .main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* QUESTION CARD */
+    .question-card {
+      background: var(--cream);
+      border: 1px solid rgba(13,13,13,0.1);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 24px var(--shadow);
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .q-category {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--gold-light);
+      color: #665a30;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 100px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+
+    .q-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 600;
+      color: var(--ink);
+      line-height: 1.4;
+      letter-spacing: -0.3px;
+      margin-bottom: 32px;
+    }
+
+    /* OPTIONS */
+    .options { display: flex; flex-direction: column; gap: 12px; }
+
+    .option {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 20px;
+      border: 1.5px solid rgba(13,13,13,0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+    .option.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+    .option.correct { border-color: var(--green); background: rgba(58,125,68,0.08); }
+    .option.wrong { border-color: var(--rust); background: rgba(184,92,56,0.08); }
+
+    .option-letter {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(13,13,13,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 13px;
+      color: var(--ink); flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .option.selected .option-letter { background: var(--gold); color: white; }
+    .option.correct .option-letter { background: var(--green); color: white; }
+    .option.wrong .option-letter { background: var(--rust); color: white; }
+
+    .option-text { font-size: 15px; color: var(--ink); line-height: 1.4; }
+
+    /* FEEDBACK */
+    .feedback {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .feedback.correct-fb { background: rgba(58,125,68,0.1); color: var(--green); border: 1px solid rgba(58,125,68,0.2); }
+    .feedback.wrong-fb { background: rgba(184,92,56,0.08); color: var(--rust); border: 1px solid rgba(184,92,56,0.2); }
+
+    /* BOTTOM NAV */
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1.5px solid rgba(13,13,13,0.15);
+      color: #666;
+    }
+    .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+    .btn-primary {
+      background: var(--ink);
+      color: var(--gold);
+    }
+    .btn-primary:hover { background: #1a1a1a; transform: translateY(-1px); box-shadow: 0 6px 20px var(--shadow); }
+    .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
+
+    .btn-submit {
+      background: var(--rust);
+      color: white;
+    }
+    .btn-submit:hover { background: #a04a28; }
+
+    /* QUESTION GRID */
+    .q-grid-wrap {
+      background: var(--cream);
+      border: 1px solid rgba(13,13,13,0.1);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px var(--shadow);
+    }
+
+    .q-grid-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px; font-weight: 700;
+      color: #888; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 16px;
+    }
+
+    .q-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+
+    .q-dot {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(13,13,13,0.06);
+      color: var(--ink);
+      border: 1.5px solid transparent;
+    }
+
+    .q-dot.answered { background: var(--gold-light); color: #665a30; border-color: var(--gold); }
+    .q-dot.current { border-color: var(--ink); background: var(--ink); color: var(--gold); }
+
+    @media (max-width: 600px) {
+      .header { padding: 0 16px; }
+      .student-info .student-badge { display: none; }
+      .progress-bar-wrap { padding: 12px 16px; }
+      .main { padding: 24px 16px 60px; }
+      .question-card { padding: 24px 20px; }
+      .q-text { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">QV</div>
+    QuizVault
+  </div>
+  <div class="student-info">
+    <div class="student-badge" id="studentBadge">
+      <strong>Student</strong>
+    </div>
+    <div class="timer-wrap">
+      <span class="timer-icon">⏱</span>
+      <span id="timer">15:00</span>
+    </div>
+  </div>
+</header>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <span class="q-counter" id="qCounter">1 / 10</span>
+</div>
+
+<main class="main">
+  <div class="question-card" id="questionCard">
+    <div class="q-category" id="qCategory">Loading...</div>
+    <div class="q-text" id="qText">Loading question...</div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-ghost" id="prevBtn" onclick="navigate(-1)">← Previous</button>
+    <div class="q-grid-wrap">
+      <div class="q-grid-title">Questions</div>
+      <div class="q-grid" id="qGrid"></div>
+    </div>
+    <button class="btn btn-primary" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+
+  <div style="text-align:center; margin-top:24px;">
+    <button class="btn btn-submit" onclick="submitQuiz()">Submit Exam</button>
+  </div>
+</main>
+
+<script>
+// ─── QUESTION BANK ───────────────────────────────────
+const QUESTION_BANK = {
+  java: [
+    { q: "Which keyword is used to define a class in Java?", opts: ["define","class","struct","object"], ans: 1, cat: "Java Basics" },
+    { q: "What is the default value of an int variable in Java?", opts: ["null","undefined","0","1"], ans: 2, cat: "Data Types" },
+    { q: "Which of these is NOT a Java primitive type?", opts: ["int","String","boolean","char"], ans: 1, cat: "Data Types" },
+    { q: "What does JVM stand for?", opts: ["Java Very Manageable","Java Virtual Machine","Java Verified Module","Java Version Manager"], ans: 1, cat: "Concepts" },
+    { q: "Which method is the entry point of a Java program?", opts: ["start()","init()","main()","run()"], ans: 2, cat: "Java Basics" },
+    { q: "Which keyword prevents a variable from being changed?", opts: ["static","const","final","immutable"], ans: 2, cat: "Keywords" },
+    { q: "What is the size of an int in Java?", opts: ["8 bits","16 bits","32 bits","64 bits"], ans: 2, cat: "Data Types" },
+    { q: "Which of these is used to handle exceptions in Java?", opts: ["try-catch","if-else","switch","handle"], ans: 0, cat: "Exception Handling" },
+    { q: "What does OOP stand for?", opts: ["Object Oriented Programming","Open Object Protocol","Operator Override Protocol","Only One Parameter"], ans: 0, cat: "Concepts" },
+    { q: "Which class is the parent of all Java classes?", opts: ["Base","Super","Object","Root"], ans: 2, cat: "Inheritance" },
+  ],
+  webdev: [
+    { q: "What does HTML stand for?", opts: ["HyperText Markup Language","High Text Machine Language","HyperText Machine Language","HyperTransfer Markup Language"], ans: 0, cat: "HTML" },
+    { q: "Which HTML tag is used to create a hyperlink?", opts: ["<link>","<a>","<href>","<url>"], ans: 1, cat: "HTML" },
+    { q: "Which CSS property changes text color?", opts: ["text-color","font-color","color","foreground"], ans: 2, cat: "CSS" },
+    { q: "What does CSS stand for?", opts: ["Creative Style Sheets","Computer Style Sheets","Cascading Style Sheets","Colorful Style Sheets"], ans: 2, cat: "CSS" },
+    { q: "Which JavaScript method selects an element by ID?", opts: ["getElement()","getElementById()","selectById()","findElement()"], ans: 1, cat: "JavaScript" },
+    { q: "Which tag is used for the largest heading in HTML?", opts: ["<h6>","<heading>","<h1>","<head>"], ans: 2, cat: "HTML" },
+    { q: "How do you write a comment in CSS?", opts: ["// comment","<!-- comment -->","/* comment */","# comment"], ans: 2, cat: "CSS" },
+    { q: "Which property is used to add space inside an element's border?", opts: ["margin","spacing","padding","border-space"], ans: 2, cat: "CSS" },
+    { q: "What does DOM stand for?", opts: ["Document Object Model","Data Object Management","Design Object Module","Document Order Model"], ans: 0, cat: "JavaScript" },
+    { q: "Which tag is used to include JavaScript in HTML?", opts: ["<js>","<javascript>","<script>","<code>"], ans: 2, cat: "HTML" },
+  ],
+  dbms: [
+    { q: "What does SQL stand for?", opts: ["Structured Query Language","Simple Query Language","Standard Query Logic","System Query Language"], ans: 0, cat: "SQL Basics" },
+    { q: "Which SQL command retrieves data from a table?", opts: ["GET","FETCH","SELECT","RETRIEVE"], ans: 2, cat: "SQL Commands" },
+    { q: "Which key uniquely identifies each row in a table?", opts: ["Foreign Key","Candidate Key","Primary Key","Unique Key"], ans: 2, cat: "Keys" },
+    { q: "What does DBMS stand for?", opts: ["Database Management System","Data Basic Management System","Dynamic Base Management System","Database Module System"], ans: 0, cat: "Concepts" },
+    { q: "Which SQL command is used to add new data?", opts: ["ADD","APPEND","INSERT","PUT"], ans: 2, cat: "SQL Commands" },
+    { q: "Which SQL clause filters records?", opts: ["HAVING","ORDER BY","WHERE","FILTER"], ans: 2, cat: "SQL Clauses" },
+    { q: "What is a foreign key?", opts: ["A key from another country","A key referencing another table's primary key","The second primary key","A key with no value"], ans: 1, cat: "Keys" },
+    { q: "Which command removes a table entirely?", opts: ["DELETE","REMOVE","DROP","CLEAR"], ans: 2, cat: "SQL Commands" },
+    { q: "What does normalization mean in DBMS?", opts: ["Speeding up queries","Encrypting data","Organizing data to reduce redundancy","Indexing tables"], ans: 2, cat: "Concepts" },
+    { q: "Which SQL function counts total rows?", opts: ["SUM()","TOTAL()","COUNT()","NUMBER()"], ans: 2, cat: "SQL Functions" },
+  ],
+  os: [
+    { q: "What does OS stand for?", opts: ["Open Source","Operating System","Object System","Output Service"], ans: 1, cat: "Basics" },
+    { q: "Which of these is a function of an OS?", opts: ["Running SQL","Memory Management","Writing HTML","Designing UI"], ans: 1, cat: "Functions" },
+    { q: "What is a process in an OS?", opts: ["A saved file","A program in execution","A CPU core","A memory address"], ans: 1, cat: "Processes" },
+    { q: "Which scheduling algorithm gives priority to shortest jobs?", opts: ["FCFS","Round Robin","SJF","Priority Queue"], ans: 2, cat: "Scheduling" },
+    { q: "What is deadlock?", opts: ["A locked screen","Processes waiting for each other forever","A crashed application","A corrupted file"], ans: 1, cat: "Deadlock" },
+    { q: "What is virtual memory?", opts: ["Extra RAM","RAM on the GPU","Disk space used as RAM","Cloud storage"], ans: 2, cat: "Memory" },
+    { q: "Which OS component manages hardware resources?", opts: ["Shell","Compiler","Kernel","Loader"], ans: 2, cat: "Components" },
+    { q: "What does CPU stand for?", opts: ["Central Processing Unit","Core Processor Unit","Central Program Utility","Computer Power Unit"], ans: 0, cat: "Hardware" },
+    { q: "What is a thread?", opts: ["A type of fiber","Smallest unit of CPU execution","A memory block","A network packet"], ans: 1, cat: "Processes" },
+    { q: "What does FIFO stand for in scheduling?", opts: ["First In First Out","File In File Out","Fast Input Fast Output","First Index First Operation"], ans: 0, cat: "Scheduling" },
+  ],
+  cn: [
+    { q: "What does IP stand for?", opts: ["Internet Program","Internet Protocol","Internal Protocol","Interface Port"], ans: 1, cat: "Basics" },
+    { q: "What is the full form of HTTP?", opts: ["HyperText Transfer Protocol","High Transfer Text Protocol","HyperText Transport Program","Home Transfer Protocol"], ans: 0, cat: "Protocols" },
+    { q: "How many layers are in the OSI model?", opts: ["4","5","6","7"], ans: 3, cat: "OSI Model" },
+    { q: "Which device connects different networks?", opts: ["Switch","Hub","Router","Repeater"], ans: 2, cat: "Devices" },
+    { q: "What does DNS stand for?", opts: ["Dynamic Network Service","Domain Name System","Data Network Storage","Direct Name Server"], ans: 1, cat: "Protocols" },
+    { q: "Which protocol assigns IP addresses automatically?", opts: ["FTP","SMTP","DHCP","ARP"], ans: 2, cat: "Protocols" },
+    { q: "What is the maximum value of an IPv4 octet?", opts: ["255","256","128","512"], ans: 0, cat: "IP Addressing" },
+    { q: "Which layer of OSI handles physical transmission?", opts: ["Network","Transport","Data Link","Physical"], ans: 3, cat: "OSI Model" },
+    { q: "What does LAN stand for?", opts: ["Large Area Network","Local Area Network","Logical Access Node","Linear Array Network"], ans: 1, cat: "Networks" },
+    { q: "Which protocol is used for sending emails?", opts: ["FTP","HTTP","SMTP","IMAP"], ans: 2, cat: "Protocols" },
+  ]
+};
+
+// ─── STATE ───────────────────────────────────────────
+let student = JSON.parse(sessionStorage.getItem('student') || '{}');
+let questions = [];
+let current = 0;
+let answers = [];
+let timerInterval;
+let seconds = 15 * 60;
+let answered = false;
+
+// ─── INIT ─────────────────────────────────────────────
+function init() {
+  if (!student.name) { window.location.href = 'index.html'; return; }
+
+  document.getElementById('studentBadge').innerHTML =
+    `<strong>${student.name}</strong> · ${student.roll}`;
+
+  questions = QUESTION_BANK[student.subject] || QUESTION_BANK.java;
+  answers = new Array(questions.length).fill(null);
+
+  renderQGrid();
+  renderQuestion();
+  startTimer();
+}
+
+// ─── TIMER ────────────────────────────────────────────
+function startTimer() {
+  const el = document.getElementById('timer');
+  timerInterval = setInterval(() => {
+    seconds--;
+    const m = String(Math.floor(seconds / 60)).padStart(2,'0');
+    const s = String(seconds % 60).padStart(2,'0');
+    el.textContent = `${m}:${s}`;
+    if (seconds <= 120) el.classList.add('warning');
+    if (seconds <= 0) { clearInterval(timerInterval); submitQuiz(); }
+  }, 1000);
+}
+
+// ─── RENDER QUESTION ─────────────────────────────────
+function renderQuestion() {
+  const q = questions[current];
+  answered = answers[current] !== null;
+
+  document.getElementById('qCategory').textContent = q.cat;
+  document.getElementById('qText').textContent = `Q${current+1}. ${q.q}`;
+  document.getElementById('qCounter').textContent = `${current+1} / ${questions.length}`;
+  document.getElementById('progressFill').style.width =
+    `${((current + 1) / questions.length) * 100}%`;
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option' +
+      (answered && answers[current] === i ? ' selected' : '') +
+      (answered && i === q.ans ? ' correct' : '') +
+      (answered && answers[current] === i && i !== q.ans ? ' wrong' : '');
+    div.innerHTML = `
+      <div class="option-letter">${letters[i]}</div>
+      <div class="option-text">${opt}</div>`;
+    if (!answered) div.onclick = () => selectAnswer(i);
+    container.appendChild(div);
+  });
+
+  // Feedback
+  const fb = document.getElementById('feedback');
+  if (answered) {
+    const correct = answers[current] === q.ans;
+    fb.className = `feedback ${correct ? 'correct-fb' : 'wrong-fb'}`;
+    fb.style.display = 'block';
+    fb.innerHTML = correct
+      ? `✅ <strong>Correct!</strong> Well done.`
+      : `❌ <strong>Wrong.</strong> The correct answer is: <strong>${q.opts[q.ans]}</strong>`;
+  } else {
+    fb.style.display = 'none';
+  }
+
+  // Buttons
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').textContent =
+    current === questions.length - 1 ? 'Last →' : 'Next →';
+
+  updateQGrid();
+}
+
+// ─── SELECT ANSWER ───────────────────────────────────
+function selectAnswer(idx) {
+  answers[current] = idx;
+  renderQuestion();
+}
+
+// ─── NAVIGATE ─────────────────────────────────────────
+function navigate(dir) {
+  const next = current + dir;
+  if (next < 0 || next >= questions.length) return;
+  current = next;
+  document.getElementById('questionCard').style.animation = 'none';
+  requestAnimationFrame(() => {
+    document.getElementById('questionCard').style.animation = 'slideIn 0.4s ease';
+    renderQuestion();
+  });
+}
+
+// ─── QUESTION GRID ───────────────────────────────────
+function renderQGrid() {
+  const grid = document.getElementById('qGrid');
+  grid.innerHTML = '';
+  questions.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'q-dot';
+    dot.id = `dot-${i}`;
+    dot.textContent = i + 1;
+    dot.onclick = () => { current = i; renderQuestion(); };
+    grid.appendChild(dot);
+  });
+}
+
+function updateQGrid() {
+  questions.forEach((_, i) => {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.className = 'q-dot' +
+      (i === current ? ' current' : '') +
+      (answers[i] !== null && i !== current ? ' answered' : '');
+  });
+}
+
+// ─── SUBMIT ───────────────────────────────────────────
+function submitQuiz() {
+  clearInterval(timerInterval);
+
+  let score = 0;
+  questions.forEach((q, i) => { if (answers[i] === q.ans) score++; });
+
+  const timeUsed = 15 * 60 - seconds;
+  const mins = Math.floor(timeUsed / 60);
+  const secs = timeUsed % 60;
+
+  sessionStorage.setItem('result', JSON.stringify({
+    score, total: questions.length, answers,
+    questions, student,
+    timeTaken: `${mins}m ${secs}s`
+  }));
+
+  window.location.href = 'result.html';
+}
+
+init();
+</script>
+</body>
+</html>

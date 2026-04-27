@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizVault – Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #0d0d0d; --paper: #f5f0e8; --gold: #c9a84c;
+      --gold-light: #e8d5a3; --rust: #b85c38; --cream: #faf7f0;
+      --green: #3a7d44; --shadow: rgba(13,13,13,0.12);
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--paper); min-height: 100vh; }
+
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,0.18) 0%, transparent 60%);
+    }
+
+    .header {
+      background: var(--ink); padding: 0 40px;
+      display: flex; align-items: center; height: 64px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px;
+      font-family: 'Syne', sans-serif; font-weight: 700; color: var(--gold); font-size: 18px; }
+    .logo-mark { width: 32px; height: 32px; background: var(--gold); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink); font-size: 12px; font-weight: 800; }
+
+    .main { max-width: 820px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* HERO SCORE */
+    .result-hero {
+      text-align: center; margin-bottom: 48px;
+      animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+
+    .grade-badge {
+      display: inline-block;
+      font-family: 'Syne', sans-serif;
+      font-size: 96px; font-weight: 800;
+      letter-spacing: -4px;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .grade-A { color: var(--green); }
+    .grade-B { color: var(--gold); }
+    .grade-C { color: #e07b00; }
+    .grade-F { color: var(--rust); }
+
+    .result-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px; font-weight: 800;
+      color: var(--ink); letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .result-subtitle { font-size: 15px; color: #777; }
+
+    /* STATS CARDS */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--cream);
+      border: 1px solid rgba(13,13,13,0.1);
+      border-radius: 16px; padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 2px 12px var(--shadow);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.2s; }
+    .stat-card:nth-child(4) { animation-delay: 0.3s; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+    .stat-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 34px; font-weight: 800;
+      color: var(--ink); letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+    .stat-lbl { font-size: 12px; color: #999; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .stat-val.green { color: var(--green); }
+    .stat-val.red { color: var(--rust); }
+    .stat-val.gold { color: var(--gold); }
+
+    /* REVIEW */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.3px;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .section-title::after {
+      content: ''; flex: 1; height: 1px; background: rgba(13,13,13,0.1);
+    }
+
+    .review-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; }
+
+    .review-card {
+      background: var(--cream);
+      border: 1px solid rgba(13,13,13,0.1);
+      border-radius: 14px; padding: 20px 24px;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .review-card.correct-card { border-left: 4px solid var(--green); }
+    .review-card.wrong-card { border-left: 4px solid var(--rust); }
+
+    .review-q {
+      font-size: 14px; color: var(--ink);
+      font-weight: 500; margin-bottom: 12px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+
+    .review-num {
+      background: rgba(13,13,13,0.08);
+      color: #666; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 4px;
+      white-space: nowrap; margin-top: 2px;
+    }
+
+    .review-answers { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .ans-tag {
+      padding: 6px 14px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+    }
+    .ans-correct { background: rgba(58,125,68,0.12); color: var(--green); }
+    .ans-wrong { background: rgba(184,92,56,0.1); color: var(--rust); }
+    .ans-skipped { background: rgba(13,13,13,0.06); color: #888; }
+
+    /* ACTIONS */
+    .actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    .btn {
+      padding: 14px 32px; border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+
+    .btn-primary { background: var(--ink); color: var(--gold); }
+    .btn-primary:hover { background: #1a1a1a; transform: translateY(-1px); box-shadow: 0 6px 20px var(--shadow); }
+    .btn-outline { background: transparent; border: 1.5px solid rgba(13,13,13,0.2); color: var(--ink); }
+    .btn-outline:hover { border-color: var(--ink); }
+
+    /* Confetti */
+    .confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 999; }
+    .confetti-piece {
+      position: absolute; width: 10px; height: 10px; opacity: 0;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .header { padding: 0 16px; }
+      .main { padding: 32px 16px 60px; }
+      .grade-badge { font-size: 72px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="confetti" id="confetti"></div>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">QV</div>
+    QuizVault
+  </div>
+</header>
+
+<main class="main">
+  <div class="result-hero">
+    <div class="grade-badge" id="gradeBadge">A</div>
+    <div class="result-title" id="resultTitle">🎉 Excellent Work!</div>
+    <div class="result-subtitle" id="resultSubtitle">You've completed your exam.</div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val gold" id="scoreVal">0/10</div>
+      <div class="stat-lbl">Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val green" id="correctVal">0</div>
+      <div class="stat-lbl">Correct</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val red" id="wrongVal">0</div>
+      <div class="stat-lbl">Wrong</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="timeVal">—</div>
+      <div class="stat-lbl">Time Taken</div>
+    </div>
+  </div>
+
+  <div class="section-title">Answer Review</div>
+  <div class="review-list" id="reviewList"></div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="retake()">🔄 Retake Exam</button>
+    <button class="btn btn-outline" onclick="changeSub()">📚 Change Subject</button>
+  </div>
+</main>
+
+<script>
+  const result = JSON.parse(sessionStorage.getItem('result') || '{}');
+
+  if (!result.score && result.score !== 0) { window.location.href = 'index.html'; }
+
+  const pct = Math.round((result.score / result.total) * 100);
+  let grade, gradeClass, title, subtitle;
+
+  if (pct >= 90) { grade='A+'; gradeClass='grade-A'; title='🎉 Outstanding!'; subtitle='You\'re a star performer!'; }
+  else if (pct >= 75) { grade='A'; gradeClass='grade-A'; title='🌟 Excellent Work!'; subtitle='Great job on this exam.'; }
+  else if (pct >= 60) { grade='B'; gradeClass='grade-B'; title='👍 Good Job!'; subtitle='You passed with a solid score.'; }
+  else if (pct >= 40) { grade='C'; gradeClass='grade-C'; title='📖 Keep Practicing'; subtitle='You can do better with more practice.'; }
+  else { grade='F'; gradeClass='grade-F'; title='💪 Don\'t Give Up!'; subtitle='Review the topics and try again.'; }
+
+  document.getElementById('gradeBadge').className = `grade-badge ${gradeClass}`;
+  document.getElementById('gradeBadge').textContent = grade;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultSubtitle').textContent =
+    `${result.student.name} · ${result.student.subject?.toUpperCase()} Exam`;
+
+  document.getElementById('scoreVal').textContent = `${result.score}/${result.total}`;
+  document.getElementById('correctVal').textContent = result.score;
+  document.getElementById('wrongVal').textContent = result.total - result.score;
+  document.getElementById('timeVal').textContent = result.timeTaken || '—';
+
+  // Review
+  const list = document.getElementById('reviewList');
+  result.questions.forEach((q, i) => {
+    const userAns = result.answers[i];
+    const isCorrect = userAns === q.ans;
+    const isSkipped = userAns === null;
+
+    const card = document.createElement('div');
+    card.className = `review-card ${isCorrect ? 'correct-card' : 'wrong-card'}`;
+
+    let ansHtml = '';
+    if (isSkipped) {
+      ansHtml = `<span class="ans-tag ans-skipped">⬜ Not Answered</span>
+                 <span class="ans-tag ans-correct">✅ ${q.opts[q.ans]}</span>`;
+    } else if (isCorrect) {
+      ansHtml = `<span class="ans-tag ans-correct">✅ ${q.opts[q.ans]}</span>`;
+    } else {
+      ansHtml = `<span class="ans-tag ans-wrong">❌ Your Answer: ${q.opts[userAns]}</span>
+                 <span class="ans-tag ans-correct">✅ Correct: ${q.opts[q.ans]}</span>`;
+    }
+
+    card.innerHTML = `
+      <div class="review-q">
+        <span class="review-num">Q${i+1}</span>
+        <span>${q.q}</span>
+      </div>
+      <div class="review-answers">${ansHtml}</div>`;
+    list.appendChild(card);
+  });
+
+  // Confetti if passed
+  if (pct >= 60) {
+    const colors = ['#c9a84c','#b85c38','#3a7d44','#0d0d0d','#e8d5a3'];
+    const container = document.getElementById('confetti');
+    for (let i = 0; i < 60; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const size = Math.random() * 10 + 6;
+      piece.style.cssText = `
+        left: ${Math.random() * 100}%;
+        width: ${size}px; height: ${size}px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        animation-delay: ${Math.random() * 2}s;
+        animation-duration: ${2 + Math.random() * 2}s;
+      `;
+      container.appendChild(piece);
+    }
+  }
+
+  function retake() {
+    sessionStorage.removeItem('result');
+    window.location.href = 'quiz.html';
+  }
+
+  function changeSub() {
+    sessionStorage.removeItem('result');
+    sessionStorage.removeItem('student');
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizVault – Exam Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0d0d0d;
+      --paper: #f5f0e8;
+      --gold: #c9a84c;
+      --gold-light: #e8d5a3;
+      --rust: #b85c38;
+      --cream: #faf7f0;
+      --shadow: rgba(13,13,13,0.12);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Decorative background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 20%, rgba(201,168,76,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 20% 80%, rgba(184,92,56,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .noise {
+      position: fixed; inset: 0; pointer-events: none; opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Grid lines */
+    .grid {
+      position: fixed; inset: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(13,13,13,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(13,13,13,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+      width: 100%;
+      max-width: 1200px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 60px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 60px;
+    }
+
+    .logo-mark {
+      width: 44px; height: 44px;
+      background: var(--ink);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      color: var(--gold);
+      font-size: 18px;
+      letter-spacing: -1px;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold-light);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(38px, 5vw, 58px);
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 20px;
+    }
+
+    h1 span { color: var(--rust); }
+
+    .subtitle {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.7;
+      max-width: 380px;
+      margin-bottom: 48px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 40px;
+    }
+
+    .stat { display: flex; flex-direction: column; gap: 4px; }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px; font-weight: 800;
+      color: var(--ink); letter-spacing: -1px;
+    }
+    .stat-label { font-size: 12px; color: #888; font-weight: 500; }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      animation: fadeUp 0.8s 0.15s ease both;
+    }
+
+    .login-card {
+      background: var(--cream);
+      border: 1px solid rgba(13,13,13,0.1);
+      border-radius: 20px;
+      padding: 48px 44px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px var(--shadow), 0 4px 16px var(--shadow);
+    }
+
+    .card-header { margin-bottom: 36px; }
+    .card-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .card-header p { font-size: 14px; color: #777; }
+
+    .form-group { margin-bottom: 20px; }
+    label {
+      display: block;
+      font-size: 12px; font-weight: 500;
+      color: var(--ink); letter-spacing: 0.5px;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+
+    input[type="text"], input[type="password"], select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid rgba(13,13,13,0.15);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      background: white;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+    }
+
+    select { cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 16px center;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 15px;
+      background: var(--ink);
+      color: var(--gold);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+
+    .btn-login:hover { background: #1a1a1a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,13,13,0.2); }
+    .btn-login:active { transform: translateY(0); }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0; color: #aaa; font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(13,13,13,0.1);
+    }
+
+    .demo-info {
+      background: rgba(201,168,76,0.1);
+      border: 1px dashed rgba(201,168,76,0.4);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #665a30;
+      line-height: 1.6;
+    }
+
+    .demo-info strong { color: var(--ink); }
+
+    .error-msg {
+      display: none;
+      color: var(--rust);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .container { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="grid"></div>
+
+  <div class="container">
+    <div class="left-panel">
+      <div class="logo">
+        <div class="logo-mark">QV</div>
+        <span class="logo-text">QuizVault</span>
+      </div>
+
+      <div class="hero-tag">Online Exam Portal</div>
+
+      <h1>Test Your<br><span>Knowledge.</span><br>Ace Your Goal.</h1>
+
+      <p class="subtitle">
+        A smart exam platform built for students. Take timed quizzes, get instant results, and track your performance — all in one place.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-num">50+</span>
+          <span class="stat-label">Questions</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">5</span>
+          <span class="stat-label">Subjects</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">∞</span>
+          <span class="stat-label">Attempts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="login-card">
+        <div class="card-header">
+          <h2>Welcome back 👋</h2>
+          <p>Sign in to start your exam session</p>
+        </div>
+
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="studentName" placeholder="e.g. Rahul Sharma" autocomplete="off"/>
+        </div>
+
+        <div class="form-group">
+          <label>Roll Number</label>
+          <input type="text" id="rollNo" placeholder="e.g. CS2021045" autocomplete="off"/>
+        </div>
+
+        <div class="form-group">
+          <label>Select Subject</label>
+          <select id="subject">
+            <option value="">-- Choose a subject --</option>
+            <option value="java">Java Programming</option>
+            <option value="webdev">Web Development</option>
+            <option value="dbms">Database Management</option>
+            <option value="os">Operating Systems</option>
+            <option value="cn">Computer Networks</option>
+          </select>
+        </div>
+
+        <p class="error-msg" id="errorMsg">⚠ Please fill in all fields to continue.</p>
+
+        <button class="btn-login" onclick="startQuiz()">Start Exam →</button>
+
+        <div class="divider">demo credentials</div>
+
+        <div class="demo-info">
+          Enter any <strong>name</strong> & <strong>roll number</strong>, then pick a subject and hit <strong>Start Exam</strong>!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function startQuiz() {
+      const name = document.getElementById('studentName').value.trim();
+      const roll = document.getElementById('rollNo').value.trim();
+      const subject = document.getElementById('subject').value;
+      const err = document.getElementById('errorMsg');
+
+      if (!name || !roll || !subject) {
+        err.style.display = 'block';
+        return;
+      }
+      err.style.display = 'none';
+
+      // Store in sessionStorage and go to quiz
+      sessionStorage.setItem('student', JSON.stringify({ name, roll, subject }));
+      window.location.href = 'quiz.html';
+    }
+
+    // Allow enter key
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') startQuiz(); });
+  </script>
+</body>
+</html>
