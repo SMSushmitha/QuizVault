@@ -104,9 +104,10 @@ java QuizServer
 
 ## 👨‍💻 Author
 
-**[Your Name]**  
-Final Year Student – [Your College Name]  
-[Your GitHub Profile Link]
+S M Sushmitha 
+Final Year Student – RYM engineering college
+https://github.com/SMSushmitha
+
 
 ---
 
