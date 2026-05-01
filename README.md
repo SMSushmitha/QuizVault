@@ -101,6 +101,13 @@ java QuizServer
 - [ ] PDF result download
 
 ---
+## What I Learned
+- Understanding real-world project structure  
+- How different files are connected  
+- Improving debugging and reading code skills
+
+  ## Acknowledgement
+This project is based on an existing implementation and was used for learning purposes.
 
 ## 👨‍💻 Author
 
